@@ -1,0 +1,75 @@
+on: [push]
+name: cargo
+jobs:
+
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+    - uses: actions/checkout@v4
+    - name: Cache `cargo fetch`
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+        key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: cargo-deps-
+    - run: cargo fetch
+    - name: Cache `cargo test`
+      uses: actions/cache@v3
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+    - run: cargo test --offline --doc
+    - run: cargo test --offline --doc --release
+
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+    - run: rustup component add rustfmt
+    - uses: actions/checkout@v4
+    - run: cargo fmt --check --all
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+    - run: rustup component add clippy
+    - uses: actions/checkout@v4
+    - name: Cache `cargo fetch`
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+        key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: cargo-deps-
+    - run: cargo fetch
+    - name: Cache `cargo clippy`
+      uses: actions/cache@v3
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+    - run: |
+        cargo clippy \
+          --locked --frozen --offline --all-targets --all-features \
+          -- -D warnings --no-deps \
+          -W clippy::cast_lossless \
+          -W clippy::redundant_closure_for_method_calls \
+          -W clippy::str_to_string
