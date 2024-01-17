@@ -12,7 +12,7 @@ jobs:
         toolchain: stable
     - uses: actions/checkout@v4
     - name: Cache `cargo fetch`
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry/index/
@@ -22,7 +22,7 @@ jobs:
         restore-keys: cargo-deps-
     - run: cargo fetch
     - name: Cache `cargo test`
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: target
         key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
@@ -52,7 +52,7 @@ jobs:
     - run: rustup component add clippy
     - uses: actions/checkout@v4
     - name: Cache `cargo fetch`
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry/index/
@@ -62,7 +62,7 @@ jobs:
         restore-keys: cargo-deps-
     - run: cargo fetch
     - name: Cache `cargo clippy`
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: target
         key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
